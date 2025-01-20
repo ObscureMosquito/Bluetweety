@@ -1,0 +1,9 @@
+Package: com.bag.skyglow.bluetweety
+Name: BlueTweety
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: An awesome MobileSubstrate tweak!
+Maintainer: Requis, bag.xml
+Author: Requis, bag.xml
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)
