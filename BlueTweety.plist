@@ -4,5 +4,7 @@
             "com.apple.sociald.Social",
             "com.apple.Preferences"
         );
+
+        Executables = ( "twitterd" );
     };
 }
