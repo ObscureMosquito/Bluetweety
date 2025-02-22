@@ -2,22 +2,46 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 #import <substrate.h>
+#import "Tweak.h"
 
 // ===============================================
 // Shared Helper: Replace Twitter Domains
 // ===============================================
 
-static NSString * ReplaceTwitterDomain(NSString *original) {
-    // Remove "api." subdomain from URLs
+// Fetch the custom URL from NSUserDefaults
+static NSString *BlueTweetyCustomServerURL() {
+    NSString *prefsPath = @"/var/mobile/Library/Preferences/bag.skyglow.bluetweetypreferences.plist";
+    NSDictionary *prefs = [NSDictionary dictionaryWithContentsOfFile:prefsPath];
+    
+    if (prefs) {
+        //NSLog(@"[BlueTweety] Successfully loaded preferences plist.");
+    } else {
+        //NSLog(@"[BlueTweety] Failed to load preferences plist.");
+    }
+
+    NSString *customURL = [prefs objectForKey:@"URLEndpoint"];
+    if (!customURL || [customURL isEqualToString:@""]) {
+        //NSLog(@"[BlueTweety] Custom URL not set, using default value.");
+        return @"example.com"; // Default value if not set
+    }
+    
+    //NSLog(@"[BlueTweety] Custom URL loaded: %@", customURL);
+    return customURL;
+}
+
+static NSString *ReplaceTwitterDomain(NSString *original) {
+    NSString *customDomain = BlueTweetyCustomServerURL();
+
+    // Remove "api." or "upload." subdomains from URLs
     NSString *cleanURL = [original stringByReplacingOccurrencesOfString:@"api.twitter.com" withString:@"twitter.com"];
     cleanURL = [cleanURL stringByReplacingOccurrencesOfString:@"upload.twitter.com" withString:@"twitter.com"];
-    // Replace domain with the custom server
-    return [cleanURL stringByReplacingOccurrencesOfString:@"twitter.com"
-                                               withString:@"twitterbridge.loganserver.net"];
+
+    // Replace "twitter.com" with the custom domain
+    return [cleanURL stringByReplacingOccurrencesOfString:@"twitter.com" withString:customDomain];
 }
 
 // ===============================================
-// iOS 5 Hooks: TWDAuthenticator
+// iOS 5 Hooks: TWDAuthenticator, for Settings Bundle
 // ===============================================
 
 static NSURL *(*orig_accessTokenURL)(id self, SEL _cmd) = NULL;
@@ -64,7 +88,7 @@ static void hook_iOS5_TWDAuthenticator() {
 }
 
 // ===============================================
-// iOS 5/6+ Hooks: SLTwitterRequest For Settings Bundle
+// iOS 6+ Hooks: SLTwitterRequest For Posting from system
 // ===============================================
 
 static id (*orig_SL_initWithURL)(id self, SEL _cmd, NSURL *url, NSDictionary *params, int method) = NULL;
@@ -89,7 +113,7 @@ NSURL* hook_SL_URL(id self, SEL _cmd) {
         NSURL *newURL = [NSURL URLWithString:newURLString];
         NSLog(@"[BlueTweety iOS6+] (SLTwitterRequest) Redirect URL: %@ -> %@", originalURLString, newURLString);
         return newURL;
-    }
+    }   
     return originalURL;
 }
 
@@ -153,20 +177,21 @@ static void hook_SLTwitterRequestClasses() {
     NSLog(@"[BlueTweety] iOS version = %f", systemVer);
 
     if (systemVer < 6.0) {
+        // iOS 5 specific hooks
         NSLog(@"[BlueTweety] Detected iOS 5, hooking TWDAuthenticator...");
-        hook_iOS5_TWDAuthenticator();
-    } else {
-        NSLog(@"[BlueTweety] Detected iOS 6+, hooking SLTwitterRequest...");
-        [[NSNotificationCenter defaultCenter] addObserverForName:NSBundleDidLoadNotification
+                [[NSNotificationCenter defaultCenter] addObserverForName:NSBundleDidLoadNotification
                                                           object:nil
                                                            queue:nil
                                                       usingBlock:^(NSNotification *note) {
             NSBundle *bundle = note.object;
             if ([bundle.bundlePath rangeOfString:@"TwitterSettings.bundle"].location != NSNotFound) {
                 NSLog(@"[BlueTweety] TwitterSettings bundle loaded: %@", bundle.bundlePath);
-                hook_SLTwitterRequestClasses();
+                hook_iOS5_TWDAuthenticator();
             }
         }];
+    } else {
+        // iOS 6+ specific hooks
         hook_SLTwitterRequestClasses();
     }
+    hook_iOS5_TWDAuthenticator();
 }

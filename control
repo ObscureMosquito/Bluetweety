@@ -1,9 +1,11 @@
-Package: com.bag.skyglow.bluetweety
+Package: bag.skyglow.bluetweety
 Name: BlueTweety
-Version: 0.0.1
+Version: 1.0
 Architecture: iphoneos-arm
-Description: An awesome MobileSubstrate tweak!
+Description: Fix the iOS integration with Twitter across the system, as well as the Twitter app.
 Maintainer: Requis, bag.xml
 Author: Requis, bag.xml
+Depiction: http://cydia.skyglow.es/depictions/bag.skyglow.bluetweety/depictions/index.html
+Icon: file:///Library/Application%20Support/bag.skyglow.bluetweety/BlueTweety-Icon.png
 Section: Tweaks
-Depends: mobilesubstrate (>= 0.9.5000)
+Depends: mobilesubstrate (>= 0.9.5000), preferenceloader

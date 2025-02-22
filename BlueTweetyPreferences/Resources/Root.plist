@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>title</key>
+	<string>BlueTweety</string>
+    <key>items</key>
+    <array>
+        <!-- Server Proxy Configuration -->
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Twitter Proxy Settings</string>
+            <key>footerText</key>
+            <string>Do NOT include "https://" in URL.</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSEditTextCell</string>
+            <key>defaults</key>
+            <string>bag.skyglow.bluetweetypreferences</string>
+            <key>key</key>
+            <string>URLEndpoint</string>
+            <key>PostNotification</key>
+            <string>bag.skyglow.bluetweetypreferences/settingschanged</string>
+        </dict>
+
+        <!-- Restart Services Section -->
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>footerText</key>
+            <string>Changes might require a restart of system services, rebooting might sometimes be necessary.</string>
+        </dict>
+
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string></string>
+		</dict>
+
+        <!-- Credits Section -->
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Credits and Thanks:</string>
+		</dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>footerText</key>
+            <string>BlueTweety was developed by ObscureMosquito and bag.xml. Special thanks to Preloading for enabling this with his server support!</string>
+        </dict>
+    </array>
+</dict>
+</plist>
