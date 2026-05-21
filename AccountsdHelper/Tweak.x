@@ -5,19 +5,11 @@ static NSString *BlueTweetyCustomServerURL() {
     NSString *prefsPath = @"/var/mobile/Library/Preferences/bag.skyglow.bluetweetypreferences.plist";
     NSDictionary *prefs = [NSDictionary dictionaryWithContentsOfFile:prefsPath];
     
-    if (prefs) {
-        //NSLog(@"[BlueTweety] Successfully loaded preferences plist.");
-    } else {
-        //NSLog(@"[BlueTweety] Failed to load preferences plist.");
-    }
-
     NSString *customURL = [prefs objectForKey:@"URLEndpoint"];
     if (!customURL || [customURL isEqualToString:@""]) {
-        //NSLog(@"[BlueTweety] Custom URL not set, using default value.");
         return @"example.com"; // Default value if not set
     }
     
-    //NSLog(@"[BlueTweety] Custom URL loaded: %@", customURL);
     return customURL;
 }
 
@@ -40,7 +32,6 @@ static NSString *ReplaceTwitterDomain(NSString *original) {
     // If "api.twitter.com" is in the URL, redirect
     if ([URLString rangeOfString:@"api.twitter.com"].location != NSNotFound) {
         NSString *newURLString = ReplaceTwitterDomain(URLString);
-        NSLog(@"[BlueTweety] (NSURL) Redirect +URLWithString: %@ -> %@", URLString, newURLString);
         return %orig(newURLString);
     }
     return %orig(URLString);

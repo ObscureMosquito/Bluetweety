@@ -1,4 +1,6 @@
-TARGET := iphone:clang:latest:7.0
+TARGET := iphone:clang:7.0:5.0
+ARCHS = armv7 armv7s arm64
+
 INSTALL_TARGET_PROCESSES = com.atebits.Tweetie2
 
 

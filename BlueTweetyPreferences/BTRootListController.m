@@ -14,34 +14,30 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    // Define the dimensions of the header
-    CGFloat headerHeight = 250; // Adjust the header height if needed
-    CGFloat headerWidth = self.view.frame.size.width; // Use self.view's width for consistency
-    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, headerWidth, headerHeight)];
-    
-    // Set custom dimensions for the image
-    CGFloat imageWidth = 170; // Desired image width
-    CGFloat imageHeight = 170; // Desired image height
-    
-    // Ensure layout updates are applied
-    [headerView layoutIfNeeded];
+    [self _updateTableHeaderView];
+}
 
-    // Calculate x and y to center the image within the headerView
-    CGFloat xPosition = (headerWidth - imageWidth) / -2.35; // Center horizontally
-    CGFloat yPosition = (headerHeight - imageHeight) / 2; // Center vertically
+- (void)_updateTableHeaderView {
+    // Get the table width dynamically, fallback to 320 for legacy iPhones if bounds aren't set yet
+    UITableView *tableView = (UITableView *)self.table;
+    CGFloat w = tableView.bounds.size.width;
+    if (w < 10.0f) w = 320.0f;
 
-    // Create the UIImageView with the desired size and position
-    UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(xPosition, yPosition, imageWidth, imageHeight)];
+    // Dimensions for your BlueTweety icon
+    CGFloat imageWidth  = 170.0f;
+    CGFloat imageHeight = 170.0f;
+    CGFloat topPad      = 22.0f;
+    
+    // Proper math to perfectly center the image horizontally
+    CGFloat startX = (w - imageWidth) / 2.0f;
+
+    // 1. Setup the Icon
+    UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(startX, topPad, imageWidth, imageHeight)];
     imageView.contentMode = UIViewContentModeScaleAspectFit;
     imageView.clipsToBounds = YES;
 
-    // Provide the absolute path for the image
     NSString *absolutePath = @"/Library/Application Support/bag.skyglow.bluetweety/BlueTweety-Icon.png";
     UIImage *image = [UIImage imageWithContentsOfFile:absolutePath];
-
-    NSLog(@"[BlueTweety] Attempting to load image from path: %@", absolutePath);
-    NSLog(@"[BlueTweety] Loaded image: %@", image);
 
     if (image) {
         imageView.image = image;
@@ -49,14 +45,51 @@
         NSLog(@"[BlueTweety] Failed to load image at path: %@", absolutePath);
     }
 
-    // Add the UIImageView to the headerView
-    [headerView addSubview:imageView];
+    // 2. Setup the Text Formatting (keeping the Skyglow placeholder text)
+    CGFloat iconGap   = 10.0f;
+    CGFloat titleGap  = 4.0f;
+    CGFloat bodyGap   = 12.0f;
+    CGFloat botPad    = 18.0f;
+    CGFloat sideInset = 24.0f;
 
-    // Ensure headerView has the correct frame and layout
-    [headerView layoutSubviews];
+    UILabel *titleLabel          = [[UILabel alloc] init];
+    titleLabel.text              = @"Skyglow Notifications";
+    titleLabel.font              = [UIFont boldSystemFontOfSize:17.0f];
+    titleLabel.textColor         = [UIColor colorWithRed:0.18f green:0.18f blue:0.18f alpha:1.0f];
+    titleLabel.shadowColor       = [UIColor colorWithWhite:1.0f alpha:0.7f];
+    titleLabel.shadowOffset      = CGSizeMake(0, 1);
+    titleLabel.textAlignment     = NSTextAlignmentCenter;
+    titleLabel.backgroundColor   = [UIColor clearColor];
     
-    // Set the custom header view for the table
-    self.table.tableHeaderView = headerView;
+    CGFloat titleY = topPad + imageHeight + iconGap;
+    titleLabel.frame = CGRectMake(sideInset, titleY, w - sideInset * 2.0f, 22.0f);
+
+    UILabel *bodyLabel          = [[UILabel alloc] init];
+    bodyLabel.text              = @"Enter your server address below, then select\nyour server\xe2\x80\x99s public certificate to get started.";
+    bodyLabel.font              = [UIFont systemFontOfSize:13.0f];
+    bodyLabel.textColor         = [UIColor colorWithRed:0.38f green:0.38f blue:0.42f alpha:1.0f];
+    bodyLabel.shadowColor       = [UIColor colorWithWhite:1.0f alpha:0.6f];
+    bodyLabel.shadowOffset      = CGSizeMake(0, 1);
+    bodyLabel.textAlignment     = NSTextAlignmentCenter;
+    bodyLabel.backgroundColor   = [UIColor clearColor];
+    bodyLabel.numberOfLines     = 0;
+    
+    // Calculate the height needed for the body text
+    CGFloat bodyY = titleY + 22.0f + titleGap;
+    CGSize bodyFit = [bodyLabel sizeThatFits:CGSizeMake(w - sideInset * 2.0f, 999.0f)];
+    bodyLabel.frame = CGRectMake(sideInset, bodyY, w - sideInset * 2.0f, bodyFit.height);
+
+    // 3. Container Assembly
+    CGFloat totalH = bodyY + bodyFit.height + bodyGap + botPad;
+    UIView *header = [[UIView alloc] initWithFrame:CGRectMake(0, 0, w, totalH)];
+    header.backgroundColor = [UIColor clearColor];
+    
+    [header addSubview:imageView];
+    [header addSubview:titleLabel];
+    [header addSubview:bodyLabel];
+
+    // Assign back to PSListController's table
+    tableView.tableHeaderView = header;
 }
 
 - (void)restartServices {

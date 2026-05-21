@@ -1,4 +1,4 @@
-TARGET := iphone:clang:latest:5.0
+TARGET := iphone:clang:7.0:5.0
 INSTALL_TARGET_PROCESSES = SpringBoard
 ARCHS = armv7 armv7s arm64
 
@@ -8,6 +8,7 @@ TWEAK_NAME = BlueTweety
 
 BlueTweety_FILES = Tweak.x
 BlueTweety_CFLAGS = -fobjc-arc
+BlueTweety_FRAMEWORKS = UIKit
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 SUBPROJECTS += AccountsdHelper
