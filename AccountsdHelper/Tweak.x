@@ -62,7 +62,10 @@ static NSString *ReplaceTwitterDomain(NSString *original) {
 %end
 
 %ctor {
-    if ([[[NSProcessInfo processInfo] processName] isEqualToString:@"accountsd"]) {
-        %init(AccountsdHook);
+    double systemVer = [[[UIDevice currentDevice] systemVersion] doubleValue];
+    if (systemVer >= 5.0) {
+        if ([[[NSProcessInfo processInfo] processName] isEqualToString:@"accountsd"]) {
+            %init(AccountsdHook);
+        }
     }
 }

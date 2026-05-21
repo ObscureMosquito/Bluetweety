@@ -118,6 +118,8 @@ static void hook_SLTwitterRequestClasses() {
 // Universal Hook: TWRequest (iOS 5 and 6)
 // ===============================================
 
+%group TWRequestGroup
+
 %hook TWRequest
 
 - (id)initWithURL:(NSURL *)url parameters:(NSDictionary *)parameters requestMethod:(int)method {
@@ -142,6 +144,8 @@ static void hook_SLTwitterRequestClasses() {
 
 %end
 
+%end
+
 // ===============================================
 // Main Constructor: Check iOS Version
 // ===============================================
@@ -149,23 +153,27 @@ static void hook_SLTwitterRequestClasses() {
 %ctor {
     double systemVer = [[[UIDevice currentDevice] systemVersion] doubleValue];
 
-    if (systemVer < 6.0) {
-        // iOS 5 specific hooks for Settings authentication
-        if (objc_getClass("TWDAuthenticator")) {
-            hook_iOS5_TWDAuthenticator();
+    if (systemVer >= 5.0) {
+        %init(TWRequestGroup);
+
+        if (systemVer < 6.0) {
+            // iOS 5 specific hooks for Settings authentication
+            if (objc_getClass("TWDAuthenticator")) {
+                hook_iOS5_TWDAuthenticator();
+            } else {
+                [[NSNotificationCenter defaultCenter] addObserverForName:NSBundleDidLoadNotification
+                                                                  object:nil
+                                                                   queue:nil
+                                                              usingBlock:^(NSNotification *note) {
+                    NSBundle *bundle = note.object;
+                    if ([bundle.bundlePath rangeOfString:@"TwitterSettings.bundle"].location != NSNotFound) {
+                        hook_iOS5_TWDAuthenticator();
+                    }
+                }];
+            }
         } else {
-            [[NSNotificationCenter defaultCenter] addObserverForName:NSBundleDidLoadNotification
-                                                              object:nil
-                                                               queue:nil
-                                                          usingBlock:^(NSNotification *note) {
-                NSBundle *bundle = note.object;
-                if ([bundle.bundlePath rangeOfString:@"TwitterSettings.bundle"].location != NSNotFound) {
-                    hook_iOS5_TWDAuthenticator();
-                }
-            }];
+            // iOS 6+ specific hooks for Social framework requests
+            hook_SLTwitterRequestClasses();
         }
-    } else {
-        // iOS 6+ specific hooks for Social framework requests
-        hook_SLTwitterRequestClasses();
     }
 }
