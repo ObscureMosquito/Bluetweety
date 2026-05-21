@@ -12,29 +12,26 @@
     return _specifiers;
 }
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
     [self _updateTableHeaderView];
 }
 
 - (void)_updateTableHeaderView {
-    // Get the table width dynamically, fallback to 320 for legacy iPhones if bounds aren't set yet
     UITableView *tableView = (UITableView *)self.table;
     CGFloat w = tableView.bounds.size.width;
     if (w < 10.0f) w = 320.0f;
 
-    // Dimensions for your BlueTweety icon
-    CGFloat imageWidth  = 170.0f;
-    CGFloat imageHeight = 170.0f;
+    CGFloat imageWidth  = 90.0f;
+    CGFloat imageHeight = 90.0f;
     CGFloat topPad      = 22.0f;
-    
-    // Proper math to perfectly center the image horizontally
+
     CGFloat startX = (w - imageWidth) / 2.0f;
 
-    // 1. Setup the Icon
     UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(startX, topPad, imageWidth, imageHeight)];
     imageView.contentMode = UIViewContentModeScaleAspectFit;
     imageView.clipsToBounds = YES;
+    imageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
 
     NSString *absolutePath = @"/Library/Application Support/bag.skyglow.bluetweety/BlueTweety-Icon.png";
     UIImage *image = [UIImage imageWithContentsOfFile:absolutePath];
@@ -45,7 +42,6 @@
         NSLog(@"[BlueTweety] Failed to load image at path: %@", absolutePath);
     }
 
-    // 2. Setup the Text Formatting (keeping the Skyglow placeholder text)
     CGFloat iconGap   = 10.0f;
     CGFloat titleGap  = 4.0f;
     CGFloat bodyGap   = 12.0f;
@@ -53,19 +49,21 @@
     CGFloat sideInset = 24.0f;
 
     UILabel *titleLabel          = [[UILabel alloc] init];
-    titleLabel.text              = @"Skyglow Notifications";
+    titleLabel.text              = @"BlueTweety";
     titleLabel.font              = [UIFont boldSystemFontOfSize:17.0f];
     titleLabel.textColor         = [UIColor colorWithRed:0.18f green:0.18f blue:0.18f alpha:1.0f];
     titleLabel.shadowColor       = [UIColor colorWithWhite:1.0f alpha:0.7f];
     titleLabel.shadowOffset      = CGSizeMake(0, 1);
     titleLabel.textAlignment     = NSTextAlignmentCenter;
     titleLabel.backgroundColor   = [UIColor clearColor];
+    titleLabel.autoresizingMask  = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     
     CGFloat titleY = topPad + imageHeight + iconGap;
-    titleLabel.frame = CGRectMake(sideInset, titleY, w - sideInset * 2.0f, 22.0f);
+    [titleLabel sizeToFit];
+    titleLabel.frame = CGRectMake((w - titleLabel.frame.size.width) / 2.0f, titleY, titleLabel.frame.size.width, titleLabel.frame.size.height);
 
     UILabel *bodyLabel          = [[UILabel alloc] init];
-    bodyLabel.text              = @"Enter your server address below, then select\nyour server\xe2\x80\x99s public certificate to get started.";
+    bodyLabel.text              = @"Enter the server's address below, then log in\nvia the native settings section to get started.";
     bodyLabel.font              = [UIFont systemFontOfSize:13.0f];
     bodyLabel.textColor         = [UIColor colorWithRed:0.38f green:0.38f blue:0.42f alpha:1.0f];
     bodyLabel.shadowColor       = [UIColor colorWithWhite:1.0f alpha:0.6f];
@@ -73,22 +71,21 @@
     bodyLabel.textAlignment     = NSTextAlignmentCenter;
     bodyLabel.backgroundColor   = [UIColor clearColor];
     bodyLabel.numberOfLines     = 0;
+    bodyLabel.autoresizingMask  = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     
-    // Calculate the height needed for the body text
-    CGFloat bodyY = titleY + 22.0f + titleGap;
+    CGFloat bodyY = titleY + titleLabel.frame.size.height + titleGap;
     CGSize bodyFit = [bodyLabel sizeThatFits:CGSizeMake(w - sideInset * 2.0f, 999.0f)];
-    bodyLabel.frame = CGRectMake(sideInset, bodyY, w - sideInset * 2.0f, bodyFit.height);
+    bodyLabel.frame = CGRectMake((w - bodyFit.width) / 2.0f, bodyY, bodyFit.width, bodyFit.height);
 
-    // 3. Container Assembly
     CGFloat totalH = bodyY + bodyFit.height + bodyGap + botPad;
     UIView *header = [[UIView alloc] initWithFrame:CGRectMake(0, 0, w, totalH)];
     header.backgroundColor = [UIColor clearColor];
+    header.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     
     [header addSubview:imageView];
     [header addSubview:titleLabel];
     [header addSubview:bodyLabel];
 
-    // Assign back to PSListController's table
     tableView.tableHeaderView = header;
 }
 
@@ -111,6 +108,15 @@
         posix_spawn(&pid, "/bin/launchctl", NULL, NULL, (char *const *)loadArgs, NULL);
         waitpid(pid, NULL, 0);
     }
+}
+
+- (void)respringAndRestart {
+    [self restartServices];
+
+    pid_t pid;
+    const char *args[] = { "killall", "-9", "SpringBoard", NULL };
+    posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)args, NULL);
+    waitpid(pid, NULL, 0);
 }
 
 @end
